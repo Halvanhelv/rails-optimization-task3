@@ -1,92 +1,92 @@
-# Задание №3
+# Task #3
 
-В этом задании вам предлагается оптимизировать учебное `rails`-приложение.
+In this task, you are asked to optimize a training `rails` application.
 
-Для запуска потребуется:
+To run, you will need:
 - `ruby 2.6.3`
 - `postgres`
 
-Запуск и использование:
+Running and usage:
 - `bundle install`
 - `bin/setup`
 - `rails s`
-- `open http://localhost:3000/автобусы/Самара/Москва`
+- `open http://localhost:3000/buses/Samara/Moscow`
 
-## Описание учебного приложения
-Зайдя на страницу `автобусы/Самара/Москва` вы увидите расписание автобусов по этому направлению.
+## Description of the Training Application
+By visiting the page `buses/Samara/Moscow` you will see the bus schedule for this route.
 
-## Что оптимизировать
+## What to Optimize
 
-### A. Импорт данных
-При выполнении `bin/setup` в базу данных загружаются данные о рейсах из файла `fixtures/small.json`
+### A. Data Import
+When running `bin/setup`, trip data is loaded into the database from the file `fixtures/small.json`
 
-Сама загрузка данных из файла делается очень наивно (и не эффективно).
+The data loading from the file is done very naively (and inefficiently).
 
-В комплекте с заданием поставляются файлы
+The task comes with files
 - `example.json`
-- `small.json` (1K трипов)
-- `medium.json` (10K трипов)
-- `large.json` (100K трипов)
+- `small.json` (1K trips)
+- `medium.json` (10K trips)
+- `large.json` (100K trips)
 
-Нужно оптимизировать механизм перезагрузки расписания из файла так, чтобы он импортировал файл `large.json` **в пределах минуты**.
+You need to optimize the schedule reloading mechanism from the file so that it imports the `large.json` file **within a minute**.
 
 `rake reload_json[fixtures/large.json]`
 
-Для импорта этого объёма данных
-- вам может помочь гем https://github.com/zdennis/activerecord-import
-- избегайте создания лишних транзакций
-- профилируйте скрипт импорта изученными инструментами и оптимизируйте его!
+To import this volume of data
+- the gem https://github.com/zdennis/activerecord-import may help you
+- avoid creating unnecessary transactions
+- profile the import script with the tools you've learned and optimize it!
 
-### Б. Отображение расписаний
-Сами страницы расписаний тоже формируются не эффективно и при росте объёмов начинают сильно тормозить.
+### B. Schedule Display
+The schedule pages themselves are also generated inefficiently and start to slow down significantly as volumes grow.
 
-Нужно найти и устранить проблемы, замедляющие формирование этих страниц.
+You need to find and eliminate the problems that slow down the generation of these pages.
 
-Попробуйте воспользоваться
+Try using
 - [ ] `rack-mini-profiler`
 - [ ] `rails panel`
 - [ ] `bullet`
-- [ ] `explain` запросов
+- [ ] query `explain`
 
-### Сдача задания
-`PR` в этот репозиторий с кодом и case-study наподобие первых двух недель. На этот раз шаблона нет, законспектируйте ваш процесс оптимизации в свободной форме.
+### Submission
+`PR` to this repository with code and case study similar to the first two weeks. This time there's no template, document your optimization process in free form.
 
-В case-study указать:
-- за какое время выполняется импорт файла `fixtures/large.json`
-- за какое время рендерится страница `автобусы/Самара/Москва`
+In the case study indicate:
+- how long it takes to import the `fixtures/large.json` file
+- how long it takes to render the `buses/Samara/Moscow` page
 
-Перед сдачей нужно убедиться, что результат работы страницы `автобусы/Самара/Москва` для данных из файла `fixtures/example.json` не изменился, то есть не было внесено никаких функциональных изменений, только оптимизации.
+Before submitting, make sure that the result of the `buses/Samara/Moscow` page for data from the `fixtures/example.json` file hasn't changed, meaning no functional changes were made, only optimizations.
 
-Лучше защититься от такой регрессии тестом.
+It's better to protect against such regression with a test.
 
 ### bonus
-*Советую приступать к бонусу только после завершения основной части ДЗ.*
+*I advise starting the bonus only after completing the main part of the assignment.*
 
-В качестве бонуса нужно справиться с импортом файлов `1M.json` (`codename mega`) и `10M.json` (`codename hardcore`)
+As a bonus, you need to handle importing files `1M.json` (`codename mega`) and `10M.json` (`codename hardcore`)
 
 - [mega](https://www.dropbox.com/s/mhc2pzgtt4bp485/1M.json.gz?dl=1)
 - [hardcore](https://www.dropbox.com/s/h08yke5phz0qzbx/10M.json.gz?dl=1)
 
-## Подсказки
+## Hints
 
-### Мета-информация о данных
+### Meta-information About the Data
 
-При реализации импорта нужно учесть наши инсайдерские знания о данных:
-- первичным ключом для автобуса считаем `(model, number)`
-- уникальных автобусов в файле `10M.json` ~ `10_000`
-- ункикльных городов в файле `10M.json` ~ `100`
-- сервисов ровно `10`, те что перечислены в `Service::SERVICES`
+When implementing the import, you need to consider our insider knowledge about the data:
+- the primary key for a bus is `(model, number)`
+- unique buses in the `10M.json` file ~ `10_000`
+- unique cities in the `10M.json` file ~ `100`
+- there are exactly `10` services, those listed in `Service::SERVICES`
 
-### Стриминг
+### Streaming
 
-Файл `10M.json` весит ~ `3Gb`.
-Поэтому лучше не пытаться грузить его целиком в память и парсить.
+The `10M.json` file weighs ~ `3Gb`.
+So it's better not to try to load it entirely into memory and parse it.
 
-Вместо этого лучше читать и парсить его потоково.
+Instead, it's better to read and parse it as a stream.
 
-Это более-менее привычная схема, но знали ли вы, что в `Posgtres` тоже можно импортировать данные потоком?
+This is a more or less familiar scheme, but did you know that you can also import data into `Postgres` as a stream?
 
-Вот набросок потокового чтения из файла с потоковой записью в `Postgres`:
+Here's a sketch of streaming reading from a file with streaming writing to `Postgres`:
 
 ```ruby
 @cities = {}
@@ -101,15 +101,15 @@ ActiveRecord::Base.transaction do
       str = +""
 
       while !ff.eof?
-        ch = ff.read(1) # читаем по одному символу
+        ch = ff.read(1) # read one character at a time
         case
-        when ch == '{' # начинается объект, повышается вложенность
+        when ch == '{' # object starts, nesting increases
           nesting += 1
           str << ch
-        when ch == '}' # заканчивается объект, понижается вложенность
+        when ch == '}' # object ends, nesting decreases
           nesting -= 1
           str << ch
-          if nesting == 0 # если закончился объкет уровня trip, парсим и импортируем его
+          if nesting == 0 # if trip-level object ended, parse and import it
             trip = Oj.load(str)
             import(trip)
             progress_bar.increment
@@ -132,19 +132,19 @@ def import(trip)
 
   # ...
 
-  # стримим подготовленный чанк данных в postgres
+  # stream prepared data chunk to postgres
   connection.put_copy_data("#{from_id};#{to_id};#{trip['start_time']};#{trip['duration_minutes']};#{trip['price_cents']};#{bus_id}\n")
 end
 ```
 
 ### Plan
 
-- чистим базу
-- идём по огромному файлу
-- по пути формируем в памяти вспомогательные справочники ограниченного размера (`cities`, `buses`, `buses_services`)
-- сразу же стримим основные данные в базу (`trips`), чтобы не накапливать их
-- после завершения файла сохраняем в базу сформированные справочники
+- clear the database
+- iterate through the huge file
+- along the way, form auxiliary dictionaries of limited size in memory (`cities`, `buses`, `buses_services`)
+- immediately stream the main data to the database (`trips`) so as not to accumulate them
+- after the file is finished, save the formed dictionaries to the database
 
 ### Notes
 
-Можно использовать любые библиотеки для потоковой обработки `json` и вообще
+You can use any libraries for streaming `json` processing and in general

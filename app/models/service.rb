@@ -3,15 +3,15 @@
 class Service < ApplicationRecord
   SERVICES = [
     'WiFi',
-    'Туалет',
-    'Работающий туалет',
-    'Ремни безопасности',
-    'Кондиционер общий',
-    'Кондиционер Индивидуальный',
-    'Телевизор общий',
-    'Телевизор индивидуальный',
-    'Стюардесса',
-    'Можно не печатать билет'
+    'Toilet',
+    'Working toilet',
+    'Seat belts',
+    'Shared air conditioning',
+    'Individual air conditioning',
+    'Shared TV',
+    'Individual TV',
+    'Stewardess',
+    'No need to print ticket'
   ].freeze
 
   has_and_belongs_to_many :buses, join_table: :buses_services

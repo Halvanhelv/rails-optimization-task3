@@ -2,16 +2,16 @@
 
 class Bus < ApplicationRecord
   MODELS = %w[
-    Икарус
-    Мерседес
-    Сканиа
-    Буханка
-    УАЗ
-    Спринтер
-    ГАЗ
-    ПАЗ
-    Вольво
-    Газель
+    Ikarus
+    Mercedes
+    Scania
+    Bukhanka
+    UAZ
+    Sprinter
+    GAZ
+    PAZ
+    Volvo
+    Gazelle
   ].freeze
 
   has_many :trips

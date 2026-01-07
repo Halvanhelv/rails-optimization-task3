@@ -11,7 +11,7 @@ RSpec.describe TripsController, type: :controller do
     Rake::Task['reload_json'].invoke('fixtures/example.json')
   end
 
-  subject { get :index, params: { from: 'Самара', to: 'Москва' } }
+  subject { get :index, params: { from: 'Samara', to: 'Moscow' } }
 
 it "return correct html page" do
   subject

@@ -1,86 +1,86 @@
-# Case-study оптимизации
+# Optimization Case Study
 
-## Формирование метрики
-Для того, чтобы понимать, дают ли мои изменения положительный эффект на быстродействие программы я придумал использовать такую метрику:
-Для начала я решил пропарсить файл small.json
-Я обернул rake таску в Benchmark.measure - в итоге, время обработки(парсинг) файла small.json составило 10 секунды
+## Establishing the Metric
+To understand whether my changes have a positive effect on program performance, I decided to use this metric:
+First, I decided to parse the small.json file
+I wrapped the rake task in Benchmark.measure - as a result, the processing (parsing) time of the small.json file was 10 seconds
 
-Вот как я построил `feedback_loop`:
+Here's how I built the `feedback_loop`:
 
-- Профилирование
-- Обнаружение точки роста(PGHERO)
-- Оптимизация
-- Запуск тестов, чтобы убедиться, что программа возвращает нужный результат(работает верно)
-- Метрика (использование Benchmark.measure, чтобы определить время выполнения)
+- Profiling
+- Finding growth points (PGHERO)
+- Optimization
+- Running tests to make sure the program returns the correct result (works correctly)
+- Metric (using Benchmark.measure to determine execution time)
 
-Для защиты от регресии написал тест проверяющий количество сохраненных записей в базе по каждой таблице
+To protect against regression, I wrote a test checking the number of saved records in the database for each table
 
-### Ваша находка №1
-Воспользовался PGHERO и он мне выдал следующую картину (после запуска скрипта импорта medium.json)
+### Finding #1
+I used PGHERO and it showed me the following picture (after running the medium.json import script)
 ![pghero_mediun first](https://i.imgur.com/dJrZE3q.png)
-я последовал рекомендации PGHERO и добавил индекс для поля number в таблице buses
-скорость импорта сократилась с 10 до 9.6 секунд
+I followed PGHERO's recommendation and added an index for the number field in the buses table
+import speed decreased from 10 to 9.6 seconds
 
-### Ваша находка №2
-я убрал лишние промежуточные переменные и стал записывать объект сразу в массив
-скорость импорта сократилась с 9.6 до 8.7 секунд
+### Finding #2
+I removed unnecessary intermediate variables and started writing the object directly to the array
+import speed decreased from 9.6 to 8.7 seconds
 
-### Ваша находка №3
-Я заменил find_or_create_by на find_or_initialize_by для Bus
-скорость импорта сократилась с 8.7 до 7.9 секунд
+### Finding #3
+I replaced find_or_create_by with find_or_initialize_by for Bus
+import speed decreased from 8.7 to 7.9 seconds
 
 
-### Ваша находка №4
-PGHERO показал что скрипт дергает промежуточную таблицу
-я создал модель для промежуточной таблицы и стал записывать данные прямо туда, минуя ассоциацию
-скорость импорта сократилась с 7.9 до 6 секунд
+### Finding #4
+PGHERO showed that the script is hitting the intermediate table
+I created a model for the intermediate table and started writing data directly there, bypassing the association
+import speed decreased from 7.9 to 6 seconds
 
-### Ваша находка №5
-PGHERO показал что таблица bus вызывается дважды
-я объеденил создание объекта и его обновление 
-скорость импорта сократилась с 6 до 4.6 секунд
+### Finding #5
+PGHERO showed that the bus table is called twice
+I combined object creation and its update
+import speed decreased from 6 to 4.6 seconds
 
-### Ваша находка №6
-Убрал лишний вызов find_or_create_by для Bus
-скорость импорта сократилась с 4.6 до 4.4 секунд
+### Finding #6
+Removed unnecessary find_or_create_by call for Bus
+import speed decreased from 4.6 to 4.4 seconds
 
-### Ваша находка №7
-Убрал лишние вызов find_or_create_by для Service
-скорость импорта сократилась с 4.4 до 3.1 секунд
+### Finding #7
+Removed unnecessary find_or_create_by call for Service
+import speed decreased from 4.4 to 3.1 seconds
 
-### Ваша находка №8
-Сменил файл на fixtures/medium
-Добавил Записи для Trip в import
-скорость импорта сократилась с 21 до 14 секунд
+### Finding #8
+Changed file to fixtures/medium
+Added records for Trip in import
+import speed decreased from 21 to 14 seconds
 
-### Ваша находка №9
-Добавил Записи для City в import
-скорость импорта сократилась с 14 до 6.6 секунд
+### Finding #9
+Added records for City in import
+import speed decreased from 14 to 6.6 seconds
 
-### Ваша находка №10
-Сменил файл на fixtures/large
-скорость импорта сократилась с ~∞ до 36 секунд
+### Finding #10
+Changed file to fixtures/large
+import speed decreased from ~infinity to 36 seconds
 
-### Ускорение загрузки страницы
+### Page Load Acceleration
 
-### Ваша находка №1
-С помощью гема bullet я увидел что имеется проблема n+1
-убрал проблему, скорость загрузки заметно улучшилась 
+### Finding #1
+Using the bullet gem, I saw that there was an n+1 problem
+removed the problem, loading speed improved noticeably
 
-### Ваша находка №1
-Сделал пару мини фиксов во вьюхах
-скорость загрузки немного улучшилась
+### Finding #1
+Made a couple of mini fixes in views
+loading speed improved slightly
 
-### Ваша находка №2
-Добавил все необходимые индексы
-Скорость вызросла в разы
+### Finding #2
+Added all necessary indexes
+Speed increased significantly
 
-### Ваша находка №3
-гем rack-mini-profiler показал что фрагменты во вьюхах грузятся огромными количествами
-я добавил кэширование для таких фрагментов, скорость загрузки страниц сократилась значительно
+### Finding #3
+rack-mini-profiler gem showed that view fragments are loading in huge quantities
+I added caching for such fragments, page loading speed decreased significantly
 
-### Дополнения:
-Дополнительно убедился что при каждом импорте данных кэш сбрасывается, это идеальный вариант для приложения
-Переносить все фрагменты в одну вьюху не стал так как кэширование решило проблему загрузки страницы, теперь страница грузится за ~ 200ms
+### Additional notes:
+Additionally made sure that cache is cleared on each data import, this is the ideal option for the application
+Didn't move all fragments to one view since caching solved the page loading problem, now the page loads in ~ 200ms
 
-Написал тест для проверки генерируемого html 
+Wrote a test to verify the generated html
