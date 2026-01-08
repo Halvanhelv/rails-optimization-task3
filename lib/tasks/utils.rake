@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Наивная загрузка данных из json-файла в БД
+# Naive loading of data from json file into database
 # rake reload_json[fixtures/small.json]
 require 'benchmark'
 task :reload_json, [:file_name] => :environment do |_task, args|
